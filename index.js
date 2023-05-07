@@ -37,32 +37,49 @@ const Todo = sequelize.define("Todos", {
 });
 
 app.get("/", async (req, res) => {
-  const todos = await Todo.findAll();
-  res.json(todos.map((todo) => todo.toJSON()));
+  if (req.headers.authorization === "bananahammock") {
+    const todos = await Todo.findAll();
+    res.json(todos.map((todo) => todo.toJSON()));
+  } else {
+    res.status(401).send("You are not authorized");
+  }
 });
 
 app.post("/todo", express.json(), async (req, res) => {
-  const { title, id, completed } = req.body;
-  const todo = await Todo.create({
-    id,
-    title,
-    completed,
-  });
-
-  res.json(todo.toJSON());
+  console.log(req.headers.authorization);
+  if (req.headers.authorization === "bananahammock") {
+    const { title, id, completed } = req.body;
+    const todo = await Todo.create({
+      id,
+      title,
+      completed,
+    });
+    res.status(201);
+    res.json(todo.toJSON());
+  } else {
+    res.status(401).send("You are not authorized");
+  }
 });
 
 app.patch("/todo/:id", express.json(), async (req, res) => {
-  const { completed, title } = req.body;
-  const { id } = req.params;
-  await Todo.update({ completed, title }, { where: { id } });
-  res.end();
+  if (req.headers.authorization === "bananahammock") {
+    const { completed, title } = req.body;
+    const { id } = req.params;
+    await Todo.update({ completed, title }, { where: { id } });
+    res.end();
+  } else {
+    res.status(401).send("You are not authorized");
+  }
 });
 
 app.delete("/todo/:id", async (req, res) => {
-  const { id } = req.params;
-  await Todo.destroy({ where: { id } });
-  res.end;
+  if (req.headers.authorization === "bananahammock") {
+    const { id } = req.params;
+    await Todo.destroy({ where: { id } });
+    res.end;
+  } else {
+    res.status(401).send("You are not authorized");
+  }
 });
 
 const main = async () => {
